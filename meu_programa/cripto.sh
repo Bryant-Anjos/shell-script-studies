@@ -5,8 +5,11 @@
 # Autor: Bryant 
 #
 # ------------------------------------------------------------------------- #
-# Aqui você deve utilizar uma descrição mais detalhada sobre o seu programa,
-# explicando a forma de utilizar.
+# Programa para guardar textos no formato de Hash em um arquivo, armazenando
+# também a data, o usuário e um comentário caso desejar.
+# Depois de armazenado é possível validar textos com o valores salvos.
+# (Não utilizar para gurardar informações confidenciais como, por exemplo,
+# senhas)
 #
 # Exemplos:
 #     $ ./cripto.sh -c "seu texto aqui" "exemplo" 
@@ -26,6 +29,9 @@
 # v0.3 26/05/2019, Bryant:
 #     - Adicionado a possibilidade de adicionar comentários e algumas outras
 #       modificações na estrutura do programa.
+# v0.4 26/05/2019, Bryant:
+#     - Agora quando é encontrada uma correspondência na validação, a saída
+#       retorna o usuário, data, hora e comentário caso houver.
 # ------------------------------------------------------------------------- #
 # Testado em:
 #   bash 4.4.19
@@ -41,6 +47,7 @@
 #   Adicionar opção de verificar o horário caso a validação retorne True.
 #   Adicionar opção de verificar o comentário caso a validação retorne True.
 #   Adicionar opção de remover um registro caso a validação retorne True.
+#   Adicionar possibilidade dde criptografar com Salt.
 # ------------------------------------------------------------------------- #
 
 # -------------------------- VARIÁVEIS ------------------------------------ #
@@ -53,11 +60,11 @@ HELP="
           Usabilidade: -c <TEXTO> <NOME DO ARQUIVO>
   -d - Verifica se a String está salva em um determinado arquivo
           Usabilidade: -d <TEXTO> <ARQUIVO>
-  -a - Define o usuário como anônimo. Colocar antes de -c.
+  -a - Define o usuário como anônimo.
   -m - Adiciona um comentário.
           Usabilidade: -m <COMENTARIO>
 "
-VERSAO="v0.3"
+VERSAO="v0.4"
 HASH=""
 USER="$(whoami)"
 CHAVE_CRIPTOGRAFA=0
@@ -89,9 +96,16 @@ Valida () {
   local STRING_VERIFICA=$(echo -n $1 | sha256sum | cut -d " " -f 1)
   local HASH_LIST=$(cat $2 | cut -d ";" -f 1)
   for HASH_VERIFICA in $HASH_LIST; do
-    [ "$STRING_VERIFICA" = "$HASH_VERIFICA" ] && echo "Verdadeiro" && exit 0
+    if [ "$STRING_VERIFICA" = "$HASH_VERIFICA" ]; then
+      echo "Usuário: $(grep -m 1 "$STRING_VERIFICA" $2 | cut -d ";" -f 4)"
+      echo "Data: $(grep -m 1 "$STRING_VERIFICA" $2 | cut -d ";" -f 2)"
+      echo "Hora: $(grep -m 1 "$STRING_VERIFICA" $2 | cut -d ";" -f 3)"
+      COMENTARIO=$(grep -m 1 "$STRING_VERIFICA" $2 | cut -d ";" -f 5)
+      [ $COMENTARIO ] && echo "Comentário: $COMENTARIO"
+      exit 0
+    fi
   done
-  echo "Falso"
+  echo "Nenhuma correspondência encontrada."
 }
 
 # ------------------------------------------------------------------------- #
