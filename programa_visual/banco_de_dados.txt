@@ -3,7 +3,6 @@
 1:mateus:mateusmuller@gmail.com
 2:Joao:jao@gmail.com
 3:Gabriel:gabriel@gmail.com
-4:Carlos:carlos@gmail.com
 # Banco de Dados de usuário
-4:Bryant:brill@gmail.com
-5:testing:testing@gmail.com
+6:aloha:alola@a.l
+7:oyuo:fadas#ada@hol.lob

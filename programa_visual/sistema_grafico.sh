@@ -40,17 +40,36 @@ InsereUsuario () {
   ListaUsuarios
 }
 
-ApagaUsuario () {
-  ValidaExistenciaUsuario "$1" || return
+RemoverUsuario () {
+  local usuarios=$(egrep "^#|^$" -v "$ARQUIVO_DE_BANCO_DE_DADOS" | sort -h | cut -d $SEP -f 1,2 | sed 's/:/ "/;s/$/"/')
+  local id_usuario=$(eval dialog --stdout --menu \"Escolha um usuário:\" 0 0 0 $usuarios)
 
-  grep -i -v "$1$SEP" "$ARQUIVO_DE_BANCO_DE_DADOS" > "$TEMP"
+  grep -i -v "^$id_usuario$SEP" "$ARQUIVO_DE_BANCO_DE_DADOS" > $TEMP
   mv "$TEMP" "$ARQUIVO_DE_BANCO_DE_DADOS"
 
-  echo "Usuário removido com sucesso!"
-  OrdenaLista
+  dialog --msgbox "Usuário removido com sucesso!"
+  ListaUsuarios
 }
 
 OrdenaLista () {
   sort "$ARQUIVO_DE_BANCO_DE_DADOS" > "$TEMP"
   mv "$TEMP" "$ARQUIVO_DE_BANCO_DE_DADOS"
 }
+
+while :
+do
+  acao=$(dialog --title   "Gerenciamento de Usuários 2.0"         \
+                --stdout                                          \
+                --menu    "Escolha uma das opções abaixo:"        \
+                0 0 0                                             \
+                listar    "Listar todos os usuários do sistema"   \
+                remover   "Remover um usuário do sistema"         \
+                inserir   "Inserir um novo usuário no sistema")
+  [ $? -ne 0 ] && exit
+
+  case $acao in
+    listar) ListaUsuarios   ;;
+    inserir) InsereUsuario  ;;
+    remover) RemoverUsuario ;;
+  esac
+done
